@@ -47,7 +47,7 @@ function _M.access(self)
 
     local key_attr_name = self.config.key_attribute_name
     ngx.req.set_header(key_attr_name, key_attr)
-    return true
+    return true, key_attr
 end
 
 function _M.finish_login(self)

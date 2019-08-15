@@ -3,6 +3,8 @@
 local slaxml = require 'slaxml'
 local setmetatable = setmetatable
 
+local ins = require 'inspect'
+
 local _M = { _VERSION = '0.1.0' }
 
 local mt = { __index = _M }
@@ -16,28 +18,46 @@ end
 
 function _M.read_and_base64decode_response(self)
     ngx.req.read_body()
+    ngx.log(ngx.DEBUG, ngx.var.request_body)
     local args, err = ngx.req.get_post_args()
+    ngx.log(ngx.DEBUG, ins(args))
     if err ~= nil then
        return nil, string.format("failed to get post args to read SAML response, err=%s", err)
     end
 
-    return ngx.decode_base64(args.SAMLResponse)
+    local samlresp = args.SAMLResponse:gsub('\r\n', '')
+    return ngx.decode_base64(samlresp)
 end
 
-function _M.verify_response(self, response_xml)
+function _M.extract_response_cert(self, response)
+    local x509cert = response:match("<%a+:X509Certificate>(.*)</%a+:X509Certificate>")
+    if x509cert then
+        local tmpname = os.tmpname()
+        local tmpf, err = assert(io.open(tmpname, 'w'))
+        tmpf:write('-----BEGIN CERTIFICATE-----' .. x509cert .. '-----END CERTIFICATE-----\r\n')
+        tmpf:close()
+        return tmpname
+    end
+    return nil
+end
+
+function _M.verify_response(self, response)
     local tmpfilename = os.tmpname()
     local file, err = io.open(tmpfilename, "w")
-    if err ~= nil then
-       return false, string.format("failed to open temporary file for writing SAML response, err=%s", err)
+    if file == nil or err ~= nil then
+       return false, string.format("failed to open temporary file for writing SAML response, %s, err=%s", tmpfilename, err)
     end
-    file:write(response_xml)
+    file:write(response)
     file:close()
 
-    local cmd = string.format("%s --verify --pubkey-cert-pem %s --id-attr:ID urn:oasis:names:tc:SAML:2.0:protocol:Response %s",
-        self.xmlsec_command, self.idp_cert_filename, tmpfilename)
-    local code = os.execute(cmd)
+    local embeded_x509 = self:extract_response_cert(response)
+
+    local cmd = string.format("%s --verify --pubkey-cert-pem %s --id-attr:ID urn:oasis:names:tc:SAML:2.0:assertion:Assertion %s",
+        self.xmlsec_command, embeded_x509 or self.idp_cert_filename, tmpfilename)
+    ngx.log(ngx.DEBUG, cmd)
+    local ok, status, code = os.execute(cmd)
     if code ~= 0 then
-       return false, string.format("failed to verify SAML response, exitcode=%d", code)
+       return false, string.format("failed to verify SAML response, exitcode=%s", tostring(code))
     end
 
     local ok, err = os.remove(tmpfilename)
