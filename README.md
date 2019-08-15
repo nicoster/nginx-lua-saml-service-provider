@@ -3,10 +3,10 @@ ngxlua-saml-sp
 
 A simple SAML service provider library for [openresty](https://github.com/openresty/lua-nginx-module).
 
-Thanks @hnakamur for this sample project. I modified some code to integrate with [SSOCircle](https://ssocircle.com)
+Thanks [@hnakamur](https://github.com/hnakamur) for this sample project. I made some modification to integrate with [SSOCircle](https://ssocircle.com)
 and modified the README to refect the changes.
 
-I was trying to understand how SAML exactly works. Even though I've read lots of documents regarding this topic, I still feel unfamiliar with terms like IdP, SP, SAML Request/Assertion. The best way to learn something is to implement it from scratch. But having a sample to start with makes this journey less painful.
+I was trying to understand how SAML exactly works. Even though I've read lots of documents regarding this topic, I still feel unfamiliar with terms like IdP, SP, SAML Request/Assertion. The best way to learn something is to implement it from scratch. Having a sample to start with makes this journey less painful.
 
 The goal here is to minimize the efforts for others to integrate with SSOCircle.
 
@@ -30,30 +30,35 @@ sudo yum install xmlsec1 xmlsec1-openssl
 ## Changes
 * Restructure the folder
 
-to make it easier to run it as a standalone OpenResty application
+    to make it easier to run it as a standalone OpenResty application
 
 * xmlsec verification command line
 
-as SSOcircle use a different SAML assertion. the xmlsec command like has been changed to `/usr/local/bin/xmlsec1 --verify --pubkey-cert-pem /tmp/lua_svFWOE --id-attr:ID urn:oasis:names:tc:SAML:2.0:assertion:Assertion /tmp/lua_s5Sk0o`
-the first temp file is extracted from SAML Assertion. and the path is changed as is.
+    as SSOcircle use a different SAML assertion. the xmlsec command like has been changed to `/usr/local/bin/xmlsec1 --verify --pubkey-cert-pem /tmp/lua_svFWOE --id-attr:ID urn:oasis:names:tc:SAML:2.0:assertion:Assertion /tmp/lua_s5Sk0o`
 
-## Config
+    the first temp file is extracted from SAML Assertion. and the XML namespace is changed as shown above.
 
-* SP_URL
+## Configuration
 
-  you need to change this url to something unique. as this url is part of the sp_entity_id. one approach is to add an entry into your /etc/hosts file, and then use that alias in the url.
+* `SP_URL`
 
-* idp_dest_url
+    you need to change this url to something unique. as this url is part of the sp_entity_id. one approach is to add an entry into your /etc/hosts file, and then use the alias in the url. 
 
-  this is is configured for SSOCircle. No need to change.
+* `idp_dest_url`
 
-* idp_cert_filename
+    this is is configured for SSOCircle. No need to change.
 
-  this config isn't really used during verifying the SAML assertion as SSOCircle returns an assertion that is signed with a self-signed certificate which is embedded in the assertion XML.
+* `idp_cert_filename`
 
-* key_attribute_name
+    this config isn't really used during verifying the SAML assertion as SSOCircle returns an assertion that is signed with a self-signed certificate which is embedded in the assertion XML.
 
-  this is to specify which key is mandatory for a successful SAML assertion.
+* `key_attribute_name`
+
+    this is to specify which key is mandatory for a successful SAML assertion. It's been set to 'EmailAddress' for SSOCircle.
+
+* SAML Metadata
+
+    we need to specify a SAML Metadata in the your account profile in SSOCircle. you can use this [online tool](https://www.ssocircle.com/en/idp-tips-tricks/build-your-own-metadata/) to create a meta file. the `entityID` is `sp_entity_id` in the config.lua, and `ACS URL` is `sp_saml_finish_url`. If this is not configurated correctly, you should come across "invalid issuer error".
 
 ## Caveats
 
