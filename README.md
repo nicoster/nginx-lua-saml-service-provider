@@ -3,8 +3,7 @@ ngxlua-saml-sp
 
 A simple SAML service provider library for [openresty](https://github.com/openresty/lua-nginx-module).
 
-Thanks [@hnakamur](https://github.com/hnakamur) for this sample project. I made some modification to integrate with [SSOCircle](https://ssocircle.com)
-and modified the README to refect the changes.
+Thanks [@hnakamur](https://github.com/hnakamur) for this sample project. I made some modification to integrate with [SSOCircle](https://ssocircle.com).
 
 I was trying to understand how SAML exactly works. Even though I've read lots of documents regarding this topic, I still feel unfamiliar with terms like IdP, SP, SAML Request/Assertion. The best way to learn something is to implement it from scratch. Having a sample to start with makes this journey less painful.
 
@@ -30,13 +29,13 @@ sudo yum install xmlsec1 xmlsec1-openssl
 ## Changes
 * Restructure the folder
 
-    to make it easier to run it as a standalone OpenResty application
+    to make it easier to run as a standalone OpenResty application, the directory has been restructured. You may issue `make run` to run it with minor changes to Makefile.
 
 * xmlsec verification command line
 
-    as SSOcircle use a different SAML assertion. the xmlsec command like has been changed to `/usr/local/bin/xmlsec1 --verify --pubkey-cert-pem /tmp/lua_svFWOE --id-attr:ID urn:oasis:names:tc:SAML:2.0:assertion:Assertion /tmp/lua_s5Sk0o`
+    as SSOcircle use a different SAML assertion, the xmlsec command like has been changed to `/usr/local/bin/xmlsec1 --verify --pubkey-cert-pem $CERT_FILE --id-attr:ID urn:oasis:names:tc:SAML:2.0:assertion:Assertion $SAML_RESP`
 
-    the first temp file is extracted from SAML Assertion. and the XML namespace is changed as shown above.
+    the `CERT_FILE` is extracted from SAML Assertion. and the XML namespace is changed as shown above.
 
 ## Configuration
 
