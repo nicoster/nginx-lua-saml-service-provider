@@ -14,6 +14,7 @@ The goal here is to minimize the efforts for others to integrate with SSOCircle.
 
 * [hamishforbes/lua-ffi-zlib](https://github.com/hamishforbes/lua-ffi-zlib)
 * [bungle/lua-resty-template](https://github.com/bungle/lua-resty-template)
+* [cloudflare/lua-resty-cookie] Lua library for HTTP cookie manipulations for OpenResty/ngx_lua
 * `xmlsec1` command with OpenSSL support in [XML Security Library](https://www.aleksey.com/xmlsec/)
 
 To make it easier to use, I imported the following dependencies into the source code:
