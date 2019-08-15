@@ -1,5 +1,5 @@
 
-local SP_URL = 'https://local.zoomdev.us/sso'
+local SP_URL = 'https://localhost'
 return {
     key_attribute_name = "EmailAddress",
     redirect = {
@@ -8,8 +8,8 @@ return {
     },
     request = {
         idp_dest_url = "https://idp.ssocircle.com:443/sso/SSORedirect/metaAlias/publicidp",
-        sp_entity_id = SP_URL,
-        sp_saml_finish_url = SP_URL .. "/finish-login",
+        sp_entity_id = SP_URL .. '/sso',
+        sp_saml_finish_url = SP_URL .. "/sso/finish-login",
         urls_before_login = {
             dict_name = "sso_redirect_urls",
             expire_seconds = 180

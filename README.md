@@ -1,22 +1,25 @@
-nginx-lua-saml-service-provider
+ngxlua-saml-sp
 ===============================
 
-A simple SAML service provider library for [openresty/lua-nginx-module: Embed the Power of Lua into NGINX HTTP servers](https://github.com/openresty/lua-nginx-module).
+A simple SAML service provider library for [openresty](https://github.com/openresty/lua-nginx-module).
 
-The reason I create this is I want something an easy to setup and configure for the SAML ID provider at my office.
+Thanks @hnakamur for this sample project. I modified some code to integrate with [SSOCircle](https://ssocircle.com)
+and modified the README to refect the changes.
 
-This project is NOT meant to support all of SAML specs. Actually I haven't even read the SAML spec yet.
+I was trying to understand how SAML exactly works. Even though I've read lots of documents regarding this topic, I still feel unfamiliar with terms like IdP, SP, SAML Request/Assertion. The best way to learn something is to implement it from scratch. But having a sample to start with makes this journey less painful.
 
-If you want a full-fledged SAML service provider, go for [nginx-shib/nginx-http-shibboleth: Shibboleth auth request module for nginx](https://github.com/nginx-shib/nginx-http-shibboleth) and Shibboleth Service Provider at [Products – Shibboleth Consortium](https://www.shibboleth.net/products/).
+The goal here is to minimize the efforts for others to integrate with SSOCircle.
+
 
 ## Dependencies
 
-* [openresty/lua-resty-string: String utilities and common hash functions for ngx_lua and LuaJIT](https://github.com/openresty/lua-resty-string)
-* [openresty/lua-resty-lrucache: Lua-land LRU Cache based on LuaJIT FFI](https://github.com/openresty/lua-resty-lrucache)
 * [hamishforbes/lua-ffi-zlib](https://github.com/hamishforbes/lua-ffi-zlib)
+* [bungle/lua-resty-template](https://github.com/bungle/lua-resty-template)
+* `xmlsec1` command with OpenSSL support in [XML Security Library](https://www.aleksey.com/xmlsec/)
+
+To make it easier to use, I imported the following dependencies into the source code:
 * [Phrogz/SLAXML: SAX-like streaming XML parser for Lua](https://github.com/Phrogz/SLAXML)
 * [hnakamur/nginx-lua-session](https://github.com/hnakamur/nginx-lua-session)
-* `xmlsec1` command with OpenSSL support in [XML Security Library](https://www.aleksey.com/xmlsec/)
 
 On CentOS7, you can install `xmlsec1` command with OpenSSL support with the following command:
 
@@ -24,6 +27,33 @@ On CentOS7, you can install `xmlsec1` command with OpenSSL support with the foll
 sudo yum install xmlsec1 xmlsec1-openssl
 ```
 
+## Changes
+* Restructure the folder
+
+to make it easier to run it as a standalone OpenResty application
+
+* xmlsec verification command line
+
+as SSOcircle use a different SAML assertion. the xmlsec command like has been changed to `/usr/local/bin/xmlsec1 --verify --pubkey-cert-pem /tmp/lua_svFWOE --id-attr:ID urn:oasis:names:tc:SAML:2.0:assertion:Assertion /tmp/lua_s5Sk0o`
+the first temp file is extracted from SAML Assertion. and the path is changed as is.
+
+## Config
+
+* SP_URL
+
+  you need to change this url to something unique. as this url is part of the sp_entity_id. one approach is to add an entry into your /etc/hosts file, and then use that alias in the url.
+
+* idp_dest_url
+
+  this is is configured for SSOCircle. No need to change.
+
+* idp_cert_filename
+
+  this config isn't really used during verifying the SAML assertion as SSOCircle returns an assertion that is signed with a self-signed certificate which is embedded in the assertion XML.
+
+* key_attribute_name
+
+  this is to specify which key is mandatory for a successful SAML assertion.
 
 ## Caveats
 
